@@ -1,0 +1,20 @@
+### Params: baby video
+
+input_filename		= /home/vm2/Desktop/phaseEVM/data/baby.mp4
+output_filename	= /home/vm2/Desktop/phaseEVM/data/baby_mag.avi
+
+input_width		= 640
+input_height		= 480
+output_width		= 960
+output_height		= 544
+
+alpha			= 10
+cutoff_freq_low	= 0.01
+cutoff_freq_high	= 1.0
+sigma			= 4
+#1 -> true , 0 -> false
+attenuateOtherFreq	= 1
+#'octave', 'halfOctave', 'smoothHalfOctave', 'quarterOctave'
+pyrType		= halfOctave
+# 'AmplitudeWeightedBlur','FIRWindowBP','differenceOfIIR','differenceOfButterworths'
+temporalFilter		= FIRWindowBP
