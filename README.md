@@ -4,7 +4,7 @@
   <a href="https://github.com/NikolaosGian/PhaseBasedEVMCpp/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-brightgreen.svg" alt="License"></a>
 </p>
 
-## NOT WORKING 
+ NOT WORKING 
 ## About:
 This repository containing the Phase Method Eulerian Motion Magnification (EVM) implementation with C++
 
