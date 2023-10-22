@@ -3,21 +3,17 @@
 #include <complex>
 #include "fftshift.hpp"
 
-// Function to reconstruct a level using FFT
-cv::Mat reconLevel(const cv::Mat& im_dft, const cv::Mat& croppedFilter) {
-    cv::Mat recon;
+// Function to reconstruct a level using the DFT
+cv::Mat reconLevel(const cv::Mat& im_dft, const std::vector<cv::Mat>& croppedFilters, int k) {
 
-    // Apply fft2 to im_dft
-    cv::dft(im_dft, recon, cv::DFT_COMPLEX_OUTPUT);
-
-    // Apply fftshift
-    fftshift(recon);
-
-    // Multiply by croppedFilter
-    cv::Mat multiplied = croppedFilter.mul(recon);
-
-    // Multiply by 2
-    cv::multiply(multiplied, 2.0, recon);
-
-    return recon.clone();
+	//cv::Mat copyOfCroppedFilter = croppedFilters[k].clone();
+	//cv::resize(copyOfCroppedFilter, copyOfCroppedFilter, im_dft.size());
+	
+    	//cv::Mat fftshiftedFilter = copyOfCroppedFilter.mul(fftshift(cv::dft(im_dft,im_dft,cv::DFT_INVERSE)));
+    	
+    	cv::Mat dest;
+    	cv::dft(im_dft,dest,cv::DFT_INVERSE);
+    	fftshift(dest);
+    	cv::Mat fftshiftedFilter = croppedFilters[k].mul(dest);
+    	return 2 * fftshiftedFilter;
 }

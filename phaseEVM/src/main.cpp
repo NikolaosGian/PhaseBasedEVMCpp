@@ -9,7 +9,7 @@ namespace po = boost::program_options;
 
 int main(int argc, char **argv)
 {
-    cv::setBreakOnError(true);
+    //cv::setBreakOnError(true);
     std::string input_filename;
     std::string output_filename;
     

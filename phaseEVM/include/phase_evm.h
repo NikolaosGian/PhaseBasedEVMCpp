@@ -16,6 +16,18 @@
 #include <cstdint> // for uint8_t
 
 
+
+// Define a structure to store the filter and its properties
+struct Filter {
+    cv::Mat mask;
+};
+
+// Define a structure for the filter indices in both dimensions
+struct FilterIndices {
+    std::vector<int> dim1;
+    std::vector<int> dim2;
+};
+
 class PhaseEVM
 {
 
@@ -101,7 +113,9 @@ private:
     	int level;
     	
 	
-	std::vector<int> filtIDX;
+	//std::vector<int> filtIDX;
+	//std::vector<std::vector<cv::Point>> filtIDX;
+	std::vector<FilterIndices> filtIDX;
 	std::vector<cv::Mat> vid;
 	std::vector<cv::Mat> vidFFT;
 	std::vector<cv::Mat> channels1;
@@ -109,8 +123,12 @@ private:
 	
 	cv::Mat im_dft;
 	cv::Mat img_input_;
-	cv::Mat filters;
-	cv::Mat croppedFilters;
+	
+	std::vector<Filter> filters;
+	
+	//cv::Mat croppedFilters;
+	std::vector<cv::Mat> croppedFilters;
+	
 	cv::Mat magnifiedLumaFFT;
 	cv::Mat buildLevel1;
 	cv::Mat reconLevel1;
@@ -152,6 +170,9 @@ private:
 	cv::Mat outFrame;
 	cv::Mat outputFrame;
 	cv::Mat resizedFrame;
+	
+	
+	
 	
 };
 

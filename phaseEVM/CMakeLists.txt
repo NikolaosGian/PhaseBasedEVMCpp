@@ -25,6 +25,7 @@ find_package(OpenMP)
 # Using CXX Flags: Optimization (-O3) and OpenMP 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -fopenmp -std=c++14")
 
+
 # Includes
 include_directories("include")
 include_directories(${OpenCV_INCLUDE_DIRS})
@@ -44,16 +45,25 @@ add_executable(${PROJECT_NAME}
 	src/main.cpp
 	src/phase_evm.cpp
 
-	include/phase_evm.h
+	
 	include/AmplitudeWeightedBlur.hpp
-	include/fftshift.hpp     
-	include/buildLevel.hpp                
-	include/filters.hpp      
-	include/reconLevel.hpp
+	include/buildLevel.hpp 
 	include/differenceOfButterworths.hpp  
+	include/differenceOfIIR.hpp 
+	include/fftshift.hpp 
 	include/FIRWindowBP.hpp
-	include/differenceOfIIR.hpp           
+	include/getAngleMask.hpp
+	include/getAngleMaskSmooth.hpp
+	include/getFilterIDX.hpp
+	include/getFilters.hpp
+	include/getFiltersSmoothWindow.hpp
+	include/getPolarGrid.hpp
+	include/getRadialMaskPair.hpp
 	include/maxSCFpyrHt.hpp
+	include/phase_evm.h
+	include/reconLevel.hpp
+	include/getIDXFromFilter.hpp
+	include/type2str.hpp
 )
 
 # Link libraries

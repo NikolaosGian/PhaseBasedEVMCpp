@@ -1,6 +1,7 @@
+#include "type2str.hpp"
 #include "phase_evm.h"
 #include "maxSCFpyrHt.hpp"
-#include "filters.hpp"
+//#include "filters.hpp"
 #include "FIRWindowBP.hpp"
 //#include "fftshift.hpp"
 #include "differenceOfIIR.hpp"
@@ -8,6 +9,11 @@
 #include  "AmplitudeWeightedBlur.hpp"
 #include "buildLevel.hpp"
 #include "reconLevel.hpp"
+
+#include "getFilters.hpp"
+#include "getFiltersSmoothWindow.hpp"
+#include "getFilterIDX.hpp"
+//#include "getPolarGrid.hpp"
 
 
 #define DISPLAY_WINDOW_NAME "Motion Magnified Output"
@@ -109,62 +115,77 @@ void PhaseEVM::run()
             
 	std::cout << "Computing spatial filters "  << std::endl;
 	ht = maxSCFpyrHt(cv::Mat::zeros(img_input_.rows, img_input_.cols, CV_8UC1));
+	std::cout << "ht = " << ht<<std::endl;
+		
+	cv::Size dimension(img_input_.rows,img_input_.cols);
+	std::vector<double> rVals;
+	
         if(pyrType == "octave" )
         {
-              	filters = generateOctaveFilters(img_input_.rows, img_input_.cols,ht,CV_8UC1);
+        	
+		for (int i = 0; i <= ht; ++i) {
+    			rVals.push_back(std::pow(2.0, -i));
+		}
+		
+		
+		
+              	//filters = getFilters(dimension,rVals,4);
+              	getFilters(filters,dimension,rVals,4);
             	std::cout << "Using octave bandwidth pyramid " << std::endl;
         }
         else if(pyrType == "halfOctave" )
      	{
-            	filters = generateHalfOctaveFilters(img_input_.rows, img_input_.cols,ht,8,0.75f);
+     		
+		for (int i = 0; i <= ht * 2; ++i) {
+		    rVals.push_back(std::pow(2.0, -0.5 * i));
+		}
+		std::cout << "befoar filters  "<<std::endl;
+            	//filters = getFilters(dimension,rVals,8,0.75f);
+            	 getFilters(filters,dimension,rVals,8,0.75f);
             	std::cout << "Using octave halfOctave pyramid " << std::endl;
      	}
       	else if(pyrType == "smoothHalfOctave" )
         {
-            	filters = generateSmoothHalfOctaveFilters(img_input_.rows, img_input_.cols,2);
+            	
+            	//filters = getFiltersSmoothWindow(dimension,8, 6, 2, true);
+            	getFiltersSmoothWindow(filters,dimension,8, 6, 2, true);
             	std::cout << "Using smoothHalfOctave bandwidth pyramid " << std::endl;
         }
         else if(pyrType == "quarterOctave" )
         {
-            	filters = generateQuarterOctaveFilters(img_input_.rows, img_input_.cols,4);
+            	//filters = getFiltersSmoothWindow(dimension,8, 6, 4, true);
+            	getFiltersSmoothWindow(filters,dimension,8, 6, 4, true);
             	std::cout << "Using quarterOctave bandwidth pyramid " << std::endl;
         }
         else
         {
             	std::cerr<< "Invalid Filter Types = " << pyrType << std::endl;
         }
-            	
-       croppedFilters = getFilterIDX(filters,filtIDX);
-       std::cout<< "croppedFilters " << croppedFilters.size()<<endl;
-       std::cout<< "filtIDX " << filtIDX.size()<<endl;
-       numLevels = filters.rows;
-	//std::cout<< "numLevels " << numLevels<<endl;	
+        
+       std::cout << "filters[0].mask.size() = " << filters[0].mask.size() <<std::endl;
+       std::cout << "filters[0].mask.rows = " << filters[0].mask.rows <<std::endl;
+
+       std::cout << "filters[0].mask.rows * filters[0].mask.cols = " << filters[0].mask.rows * filters[0].mask.cols <<std::endl;
+       std::cout << " filters.size()= " << filters.size() <<std::endl;
+        
+        
+       getFilterIDX(filters,filtIDX,croppedFilters);
+       //croppedFilters = getFilterIDX(filters,filtIDX);
+       
+       
+       //numLevels = filters[0].mask.rows;
+       numLevels = filters.size();
+
        
        // Initialization of motion magnified luma component
        magnifiedLumaFFT = cv::Mat::zeros(img_input_.rows, img_input_.cols, CV_32F);
-	//std::cout<< "magnifiedLumaFFT " << magnifiedLumaFFT<<endl;
-	
-	/*
-	std::cout<< "im_dft " << im_dft<<endl;
-	std::cout<< "croppedFilters " << croppedFilters<<endl;
 
-	std::cout << "filtIDX: ";
-	for (int i = 0; i < filtIDX.size(); ++i) {
-        	std::cout << filtIDX[i] << " ";
-    	}
-    	std::cout << std::endl;
-	std::cout<< "k " << k<<endl;
-	*/
+
 	
 	std::cout << "Moving video to Fourier domain" << std::endl;
 	vidFFT.resize(input_cap_->get(cv::CAP_PROP_FRAME_COUNT));
-	/*
-	
-	for (size_t i = 0; i < vidFFT.size(); i++) {
-        	std::cout << "Matrix " << i << ":\n";
-        	std::cout << vidFFT[i] << std::endl;
-    	}
-	*/
+
+
 	//std::cout << "input_cap_->get(cv::CAP_PROP_FRAME_COUNT) " << input_cap_->get(cv::CAP_PROP_FRAME_COUNT) << std::endl;
 	//vidFFT(input_cap_->get(cv::CAP_PROP_FRAME_COUNT));
 	for(k = 0; k < input_cap_->get(cv::CAP_PROP_FRAME_COUNT); k++)
@@ -192,75 +213,152 @@ void PhaseEVM::run()
 		vidFFT[k] = dfftResult;
 		
 		input_cap_->read(img_input_);
-		
-		//if (img_input_.empty())
-            	//	break;
 	}
 	
-	
-	/*
-	for (size_t i = 0; i < vidFFT.size(); i++) {
-        	std::cout << "Matrix vidFFT " << i << ":\n";
-        	std::cout << vidFFT[i] << std::endl;
-    	}
-    	*/
-	
-	
+		
 	input_cap_->set(cv::CAP_PROP_POS_FRAMES, 0); // set at start frame the parser
-	std::cout << "level loop " << std::endl;
+	
+	//std::cout << "level loop " << std::endl;
 	//cv::Mat copy = vidFFT[0].clone();
 	//cv::resize(croppedFilters, croppedFilters, cv::Size(input_img_width_, input_img_height_));
 	//cv::resize(croppedFilters, croppedFilters, cv::Size(input_img_width_, input_img_height_));
-	std::cout << "numLevels =  " << numLevels <<  std::endl;
-	std::cout << "vidFFT.size = " <<  vidFFT.size() <<std::endl;
-	std::cout << "vidFFT[0].size = " <<  vidFFT[0].size() <<std::endl;
+	//std::cout << "numLevels =  " << numLevels <<  std::endl;
+	//std::cout << "vidFFT.size = " <<  vidFFT.size() <<std::endl;
+	//std::cout << "vidFFT[0].size = " <<  vidFFT[0].size() <<std::endl;
 	
-	const cv::Mat& element = vidFFT[0];
 	
-	for(int level = 2; level < numLevels -1; level++)
+	
+	for(int level = 1; level > numLevels -2; level--)
 	{
+		printf("Level = %d\n", level);
 		// Compute phases of the level
-		pyrRef = buildLevel(element, croppedFilters, filtIDX, level);
-		std::cout << "pyrRef " << pyrRef <<  std::endl;
+		//pyrRef = buildLevel(vidFFT[0], croppedFilters[level], filtIDX[level]);
+		pyrRef = buildLevel(vidFFT[0], croppedFilters, filtIDX, level);
+		cv::divide(pyrRef,cv::abs(pyrRef),pyrRefPhaseOrig);
+
 		
-		pyrRefPhaseOrig = pyrRef / cv::abs(pyrRef);
-		std::cout << "pyrRefPhaseOrig " << pyrRefPhaseOrig <<  std::endl;
+		//std::string ty =  type2str( pyrRef.type() );
+	    	//printf(" pyrRef Matrix: %s %dx%d \n", ty.c_str(), pyrRef.cols, pyrRef.rows );
+	    	
+		cv::Mat magnitude, phase;
+		std::vector<cv::Mat> planes;
+		cv::split(pyrRef, planes);
+		cv::cartToPolar(planes[0], planes[1],phase, magnitude, true);
+
+		/*
+		std::string ty =  type2str( magnitude.type() );
+	    	printf(" magnitude Matrix: %s %dx%d \n", ty.c_str(), magnitude.cols, magnitude.rows );
+	    	ty =  type2str( phase.type() );
+	    	printf(" phase Matrix: %s %dx%d \n", ty.c_str(), phase.cols, phase.rows );
+	    	
 		
-		cv::phase(pyrRef, cv::noArray(), pyrRefAngle, true);
+		ty =  type2str( pyrRef.type() );
+	    	printf(" pyrRef Matrix: %s %dx%d \n", ty.c_str(), pyrRef.cols, pyrRef.rows );
+		
+		*/
+		
+		cv::phase(planes[0], planes[1], phase);
+		//cv::phase(pyrRef, magnitude, phase);
+		//std::cout << "After cv::phase(pyrRef, magnitude, phase);" << std::endl;
+		// Adjust the phase to be in the range [-π, π]
+		for (int i = 0; i < phase.rows; ++i) {
+    			for (int j = 0; j < phase.cols; ++j) {
+        			float& phase_val = phase.at<float>(i, j);
+        			while (phase_val > CV_PI)
+            				phase_val -= 2 * CV_PI;
+       			while (phase_val < -CV_PI)
+            				phase_val += 2 * CV_PI;
+    			}
+		}
+		
+		
+	    	//ty =  type2str( temp.type() );
+	    	//printf(" temp Matrix: %s %dx%d \n", ty.c_str(), temp.cols, temp.rows );
+	    	//pyrRefAngle = cv::Mat::zeros(temp.size(), CV_32F);
+	    	
+	    	//ty =  type2str( pyrRefAngle.type() );
+	    	//printf(" pyrRefAngle Matrix: %s %dx%d \n", ty.c_str(), pyrRefAngle.cols, pyrRefAngle.rows );
+	    	//cv::phase(temp, cv::noArray(), pyrRefAngle, true); 
+
+		//cv::phase(pyrRef, cv::noArray(), pyrRefAngle, true);
+		//std::cout << "after cv::phase(pyrRef, cv::noArray(), pyrRefAngle, true);" <<std::endl;	
 		
 		//int rows = pyrRef.rows;
 		//int cols = pyrRef.cols;
 		//delta(pyrRef.rows, pyrRef.cols, CV_32FC1, cv::Scalar(0.0));
-		delta = cv::Mat(pyrRef.rows, pyrRef.cols, CV_32F, cv::Scalar(0.0));
+		//delta = cv::Mat(pyrRef.rows, pyrRef.cols, CV_32F, cv::Scalar(0.0));
 		
+		delta = cv::Mat(phase.rows, phase.cols, CV_32F, cv::Scalar(0.0));
+		//delta(cv::Size(phase.cols , phase.rows), CV_32F);
+		
+		
+				
 		std::cout << "Processing level " << level << " of " << numLevels << std::endl;
 		
 		for(int frameIDX = 0; frameIDX < input_cap_->get(cv::CAP_PROP_FRAME_COUNT); frameIDX++)
 		{
-		//filterResponse = buildLevel(vidFFT[frameIDX], croppedFilters, filtIDX, level);
-		cv::phase(filterResponse, cv::noArray(), pyrCurrent, true);
-		deltaFrame = cv::Mat::zeros(pyrCurrent.size(), CV_32FC1);
+		filterResponse = buildLevel(vidFFT[frameIDX], croppedFilters, filtIDX, level);
+		//filterResponse = buildLevel(vidFFT[frameIDX], croppedFilters[level], filtIDX[level]);
+		
+		std::vector<cv::Mat> planes1;
+		cv::split(filterResponse, planes1);
+		cv::phase(planes1[0], planes1[1],pyrCurrent); 
+		//cv::phase(filterResponse, cv::noArray(), pyrCurrent, true);
+		// Adjust the phase to be in the range [-π, π]
+		for (int i = 0; i < pyrCurrent.rows; ++i) {
+    			for (int j = 0; j < pyrCurrent.cols; ++j) {
+        			float& pyrCurrent_val = pyrCurrent.at<float>(i, j);
+        			while (pyrCurrent_val > CV_PI)
+            				pyrCurrent_val -= 2 * CV_PI;
+       			while (pyrCurrent_val < -CV_PI)
+            				pyrCurrent_val += 2 * CV_PI;
+    			}
+		}
+		
+		
+		
+		deltaFrame = cv::Mat::zeros(pyrCurrent.size(), CV_32F);
+				
+		cv::add(pyrCurrent, cv::Scalar(CV_PI), deltaFrame);
+		cv::subtract(deltaFrame, phase, deltaFrame);
+    		cv::Scalar twoPi(2 * CV_PI);
+    		cv::Mat modded = cv::Mat::zeros(deltaFrame.size(), CV_32F);
+    		cv::subtract(deltaFrame, twoPi, modded, deltaFrame < -CV_PI);
+    		cv::add(modded, deltaFrame, deltaFrame, deltaFrame < CV_PI);
+    		deltaFrame = deltaFrame - CV_PI;
+    		deltaFrame.copyTo(delta(cv::Rect(0, 0, deltaFrame.cols, deltaFrame.rows)));
+		
+		
+		/*
 		for (int i = 0; i < pyrCurrent.rows; i++) {
         		for (int j = 0; j < pyrCurrent.cols; j++) {
             			float pyrCurrentVal = pyrCurrent.at<float>(i, j);
-            			float pyrRefVal = pyrRef.at<float>(i, j);
+            			float pyrRefVal = phase.at<float>(i, j);
+            			//float pyrRefVal = pyrRef.at<float>(i, j);
             			deltaFrame.at<float>(i, j) = std::fmod(M_PI + pyrCurrentVal - pyrRefVal, 2.0 * M_PI) - M_PI;
+            			
+            			std::cout << "after deltaFrame.at<float>(i, j) = std::fmod(M_PI + pyrCurrentVal - pyrRefVal, 2.0 * M_PI) - M_PI;" << std::endl;
         			}
     			}
     		// Store deltaFrame in the delta matrix
+    		//std::cout << "befoar  deltaFrame.copyTo(delta.col(frameIDX));" << std::endl;
     		//deltaFrame.copyTo(delta.col(frameIDX));
+    		deltaFrame.copyTo(delta.col(frameIDX));
+    		//std::cout << "after  deltaFrame.copyTo(delta.col(frameIDX));" << std::endl;
+		
+		std::cout << "after 2 fors" << std::endl;
+		*/
 		}
 		
-		// Temporal Filtering
 		
+		// Temporal Filtering
         	std::cout <<"Bandpassing phases" << std::endl;
-        	
-        	if(temporalFilter == "FIRWindowBP") 
-        		delta1 = FIRWindowBP(delta,cutoff_freq_low,cutoff_freq_high);
+        	if(temporalFilter == "FIRWindowBP")
+        		delta1 = FIRWindowBP(delta,cutoff_freq_low,cutoff_freq_high); // not working need debug		
         	else if(temporalFilter == "differenceOfIIR")
-        		delta1 = differenceOfIIR(delta,cutoff_freq_low,cutoff_freq_high);
+        		delta1 = differenceOfIIR(delta,cutoff_freq_low,cutoff_freq_high);		//working
         	else if(temporalFilter == "differenceOfButterworths")
-        		delta1 = differenceOfButterworths(delta,cutoff_freq_low,cutoff_freq_high);
+        		delta1 = differenceOfButterworths(delta,cutoff_freq_low,cutoff_freq_high);	//working
  /*
         	else if(temporalFilter == "AmplitudeWeightedBlur")
         		delta1 = AmplitudeWeightedBlur(delta,cutoff_freq_low,cutoff_freq_high);
@@ -270,73 +368,183 @@ void PhaseEVM::run()
         		std::cerr<< "Invalid temporalFilter Type = " << temporalFilter << std::endl;
         		break;
         	}
-        		
+        	
+        	std::cout << "after delta1" << std::endl;
         	// Apply magnification
         	std::cout <<"Applying magnification" << std::endl;
         	for(int frameIDX = 0; frameIDX < input_cap_->get(cv::CAP_PROP_FRAME_COUNT); frameIDX++)
         	{
         		phaseOfFrame = delta1.col(frameIDX);
+        		std::cout <<"after phaseOfFrame = delta1.col(frameIDX);" << std::endl;
         		
         		originalLevel = buildLevel(vidFFT[frameIDX], croppedFilters, filtIDX, level);
+        		std::cout <<"after originalLevel = buildLevel(vidFFT[frameIDX], croppedFilters, filtIDX, level);" << std::endl;
+        		//originalLevel = buildLevel(vidFFT[frameIDX], croppedFilters[level], filtIDX[level]);
+        		
         		
         		if(sigma != 0)
         		{
-        			blurredPhase = AmplitudeWeightedBlur(phaseOfFrame, abs(originalLevel) + std::numeric_limits<float>::epsilon(), sigma);
+        			cv::abs(originalLevel);
+        			std::cout <<"std::numeric_limits<float>::epsilon()= " << std::numeric_limits<float>::epsilon() <<std::endl; 
+        			std::cout <<"originalLevel + std::numeric_limits<float>::epsilon() = " << originalLevel + std::numeric_limits<float>::epsilon()<<std::endl; 
+        			originalLevel = originalLevel + std::numeric_limits<float>::epsilon();
+        			std::cout <<"befoar blurredPhase = AmplitudeWeightedBlur(phaseOfFrame, abs(originalLevel) + std::numeric_limits<float>::epsilon(), sigma);" << std::endl;
+        			blurredPhase = AmplitudeWeightedBlur(phaseOfFrame, originalLevel, sigma);
+        			std::cout <<"after blurredPhase = AmplitudeWeightedBlur(phaseOfFrame, abs(originalLevel) + std::numeric_limits<float>::epsilon(), sigma);" << std::endl;
         		}
-        		 // Increase phase variation
-        		 
+        		
+        		// Increase phase variation
 			for (int row = 0; row < phaseOfFrame.rows; row++) {
     				for (int col = 0; col < phaseOfFrame.cols; col++) {
         				phaseOfFrame.at<float>(row, col) *= alpha;
     				}
 			}
+			std::cout <<"after phaseOfFrame.at<float>(row, col) *= alpha;" << std::endl;
 			
 			if(attenuateOtherFreq == 1)
 			{
 				tempOrig = cv::abs(originalLevel).mul(pyrRefPhaseOrig);
+				std::cout <<"after tempOrig = cv::abs(originalLevel).mul(pyrRefPhaseOrig);" << std::endl;
 			}else
 			{
 				tempOrig = originalLevel;
+				std::cout <<"after tempOrig = originalLevel;" << std::endl;
 			}
 			
 			// Create a complex matrix with the real part being cos(phaseOfFrame) and the imaginary part being sin(phaseOfFrame)
 			cv::split(complexPhase, &expPhase);
+			std::cout <<"after cv::split(complexPhase, &expPhase);" << std::endl;
 			cv::exp(phaseOfFrame, expPhase);
+			std::cout <<"after cv::exp(phaseOfFrame, expPhase);" << std::endl;
 			
 			channels[0] = tempOrig;
+			std::cout <<"after channels[0] = tempOrig;" << std::endl;
 			channels[1] = cv::Mat::zeros(tempOrig.size(), CV_32F); // Imaginary part is 0 for tempOrig
-			cv::merge(channels, 2, tempOrigComplex);
+			std::cout <<"after channels[1] = cv::Mat::zeros(tempOrig.size(), CV_32F);" << std::endl;
+			cv::merge(channels,2,tempOrigComplex);
+			std::cout <<"after cv::merge(channels, 2, tempOrigComplex);" << std::endl;
 			
 			// Perform element-wise complex multiplication
-			cv::multiply(expPhase, tempOrigComplex, tempTransformOut);
+			std::string ty =  type2str( expPhase.type() );
+	    		printf(" expPhase Matrix: %s %dx%d \n", ty.c_str(), expPhase.cols, expPhase.rows );
+	    		
+	    		ty =  type2str( tempOrigComplex.type() );
+	    		printf(" tempOrigComplex Matrix: %s %dx%d \n", ty.c_str(), tempOrigComplex.cols, tempOrigComplex.rows );
 			
-			//curLevelFrame = reconLevel(tempTransformOut, croppedFilters);
+			// Create a target matrix with CV_32FC3 2x2
+			cv::Mat expPhaseTemp(tempOrigComplex.size(), tempOrigComplex.type());
+
+			// Transform the expPhase from 32FC1 1x2  -> 32FC3 2x2 to do multiply as descripe below
+
+			for (int i = 0; i < expPhaseTemp.rows; i++) {
+			    for (int j = 0; j < expPhaseTemp.cols; j++) {
+				if (j < expPhase.cols) {
+				    // Copy the value from expPhase to the target matrix
+				    expPhaseTemp.at<cv::Vec3f>(i, j)[0] = expPhase.at<float>(0, j);
+				    expPhaseTemp.at<cv::Vec3f>(i, j)[1] = 0.0f; // Set the second channel to 0
+				    expPhaseTemp.at<cv::Vec3f>(i, j)[2] = 0.0f; // Set the third channel to 0
+				} else {
+				    // If there are no more values in expPhase, fill with zeros
+				    expPhaseTemp.at<cv::Vec3f>(i, j) = cv::Vec3f(0.0f, 0.0f, 0.0f);
+				}
+			    }
+			}
+		
+			cv::multiply(expPhaseTemp, tempOrigComplex,tempTransformOut);	//cv::multiply(expPhase, tempOrigComplex, tempTransformOut); 
+			std::cout <<"after cv::multiply(expPhase, tempOrigComplex, tempTransformOut);" << std::endl;
 			
+			//Transform the tempTransformOut from 32FC3 to 32FC1 do to DFT inside of reconLevel
+			cv::Mat temp2TransformOut(tempTransformOut.size(),CV_32FC1);
+			for (int i = 0; i < temp2TransformOut.rows; i++) {
+    				for (int j = 0; j < temp2TransformOut.cols; j++) {
+
+        				temp2TransformOut.at<cv::Vec2f>(i, j)[0] = tempTransformOut.at<cv::Vec3f>(i, j)[0];
+        				// if uncoment this the type can be CV_32FC2 temp2TransformOut.at<cv::Vec2f>(i, j)[1] = tempTransformOut.at<cv::Vec3f>(i, j)[1];
+    				}
+			}
+			std::cout <<"befoar curLevelFrame = reconLevel(tempTransformOut, croppedFilters,level);" << std::endl;
+			curLevelFrame = reconLevel(temp2TransformOut, croppedFilters,level);	//curLevelFrame = reconLevel(tempTransformOut, croppedFilters,level);
+			std::cout <<"after curLevelFrame = reconLevel(tempTransformOut, croppedFilters,level);" << std::endl;
+			/*
 			// Update magnifiedLumaFFT using element-wise addition
 			for (int i = 0; i < filtIDX.size(); ++i) {
-				int index = filtIDX[i];
-			    	int row = index / magnifiedLumaFFT.cols;  // Calculate the row from the 1D index
-			    	int col = index % magnifiedLumaFFT.cols;  // Calculate the column from the 1D index
+				//int index = filtIDX[i];
+			    	//int row = index / magnifiedLumaFFT.cols;  // Calculate the row from the 1D index
+			    	//int col = index % magnifiedLumaFFT.cols;  // Calculate the column from the 1D index
 			    
+			    	int row = filtIDX[i].dim1[0]; //int row = filtIDX[i][0].y;  // Access the y-coordinate (row) from the Point
+			    	std::cout <<"int row = filtIDX[i].dim1[0]; = " << row << std::endl;
+    				int col = filtIDX[i].dim2[0]; //int col = filtIDX[i][0].x;  // Access the x-coordinate (column) from the Point
+				std::cout <<"int col = filtIDX[i].dim2[0]; = " << col << std::endl;
+				
 			    	// Ensure that the indices are within the bounds of magnifiedLumaFFT
 			    	if (row >= 0 && row < magnifiedLumaFFT.rows && col >= 0 && col < magnifiedLumaFFT.cols) {
 					magnifiedLumaFFT.at<float>(row, col) += curLevelFrame.at<float>(i);
+					std::cout <<"after magnifiedLumaFFT.at<float>(row, col) += curLevelFrame.at<float>(i);"  << std::endl;
 			    	}
 			}
-        	}	
-	}
+			
+			
+			//magnifiedLumaFFT.at<float>(filtIDX[level].dim1[0], filtIDX[level].dim2[0];) += curLevelFrame.at<float>(filtIDX[level].dim1[0], filtIDX[level].dim2[0];);
+			if (filtIDX[level].dim1[0] >= 0 && filtIDX[level].dim1[0] < magnifiedLumaFFT.rows && filtIDX[level].dim2[0] >= 0 && filtIDX[level].dim2[0] < magnifiedLumaFFT.cols) {
+			    // Add curLevelFrame to the specified element
+			    //magnifiedLumaFFT.at<float>(filtIDX[level].dim1[0], filtIDX[level].dim2[0]) += curLevelFrame;
+			    
+			}
+			
+			*/
+			
+			
+			
+			ty =  type2str( curLevelFrame.type() );
+	    		printf(" curLevelFrame Matrix: %s %dx%d \n", ty.c_str(), curLevelFrame.cols, curLevelFrame.rows );
+			
+			ty =  type2str( magnifiedLumaFFT.type() );
+	    		printf(" magnifiedLumaFFT Matrix: %s %dx%d \n", ty.c_str(), magnifiedLumaFFT.cols, magnifiedLumaFFT.rows );
+			/*
+			if (filtIDX[level].dim1[0] >= 0 && filtIDX[level].dim1[0] < magnifiedLumaFFT.rows && filtIDX[level].dim1[0] >= 0 && filtIDX[level].dim1[0] < magnifiedLumaFFT.cols) {
+				magnifiedLumaFFT.at<float>(filtIDX[level].dim1[0], filtIDX[level].dim1[0]) += curLevelFrame.at<float>(frameIDX);
+				std::cout <<"after magnifiedLumaFFT.at<float>(row, col) += curLevelFrame.at<float>(i);"  << std::endl;
+				
+			}
+			*/
+			cv::Mat tempCurLevelFrame(magnifiedLumaFFT.size(), magnifiedLumaFFT.type());
+			cv::resize(curLevelFrame, tempCurLevelFrame, magnifiedLumaFFT.size());
+			
+			cv::add(magnifiedLumaFFT,tempCurLevelFrame, magnifiedLumaFFT);
+			std::cout <<"after cv::add(magnifiedLumaFFT,tempCurLevelFrame, magnifiedLumaFFT);"  << std::endl;
+			
+        	}
+        }
 	
-
+	
+	
+	std::cout <<"befoar // Add unmolested lowpass residual"  << std::endl;
 	// Add unmolested lowpass residual
-	level = filters.rows;
+	level = filters[0].mask.rows;
 	for(int frameIDX = 0; frameIDX < input_cap_->get(cv::CAP_PROP_FRAME_COUNT); frameIDX++)
-	{
-		extractedRegionVid = vidFFT[frameIDX](cv::Rect(filtIDX[level * 2], filtIDX[level * 2 + 1], vidFFT[frameIDX].cols, vidFFT[frameIDX].rows));
-		extractedRegionFilters = croppedFilters(cv::Rect(filtIDX[level * 2], filtIDX[level * 2 + 1], croppedFilters.cols, croppedFilters.rows));
+	{	
+		//extractedRegionVid = vidFFT[frameIDX](cv::Rect(filtIDX[level * 2], filtIDX[level * 2 + 1], vidFFT[frameIDX].cols, vidFFT[frameIDX].rows));
+		//extractedRegionFilters = croppedFilters(cv::Rect(filtIDX[level * 2], filtIDX[level * 2 + 1], croppedFilters.cols, croppedFilters.rows));
+		//extractedRegionVid = vidFFT[frameIDX](cv::Rect(filtIDX[level *2][0].y, filtIDX[level *2 + 1][0].y, vidFFT[frameIDX].cols, vidFFT[frameIDX].rows));
+		//extractedRegionFilters = croppedFilters(cv::Rect(filtIDX[level *2][0].y, filtIDX[level *2 + 1][0].y, croppedFilters[0].cols, croppedFilters[0].rows));
+		//extractedRegionFilters = croppedFilters[0](cv::Rect(filtIDX[level * 2][0].y, filtIDX[level * 2 + 1][0].y, croppedFilters[0].cols, croppedFilters[0].rows));
+		//cv::multiply(extractedRegionVid, extractedRegionFilters, multipliedResult);
+		
+		int dim1_start = filtIDX[level * 2].dim1[0];
+		int dim2_start = filtIDX[level * 2].dim2[0];
+
+		int dim1_end = filtIDX[level * 2 + 1].dim1[0];
+		int dim2_end = filtIDX[level * 2 + 1].dim2[0];
+
+		cv::Rect region(dim1_start, dim2_start, dim1_end - dim1_start + 1, dim2_end - dim2_start + 1);
+
+		extractedRegionVid = vidFFT[frameIDX](region);
+		extractedRegionFilters = croppedFilters[0](region);
 		cv::multiply(extractedRegionVid, extractedRegionFilters, multipliedResult);
 		
 		for (int i = 0; i < filtIDX.size(); ++i) {
-			int index = filtIDX[i];
+			int index = filtIDX[i].dim1[0]; //int index = filtIDX[i][0].y;
 		    	int row = index / magnifiedLumaFFT.cols;  // Calculate the row from the 1D index
 		    	int col = index % magnifiedLumaFFT.cols;  // Calculate the column from the 1D index
 			    
@@ -402,9 +610,10 @@ void PhaseEVM::run()
             output_cap_->write(tempRes);
 
 
-       // char c = cv::waitKey(1);
-       // if (c == 27)
-        //    break;	
+       /*char c = cv::waitKey(1);
+       if (c == 27)
+           break;
+           */	
 }
 
 int PhaseEVM::getCodecNumber(std::string file_name)

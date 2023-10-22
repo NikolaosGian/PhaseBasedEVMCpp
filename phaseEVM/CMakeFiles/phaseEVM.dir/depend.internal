@@ -162,7 +162,15 @@ CMakeFiles/phaseEVM.dir/src/phase_evm.cpp.o
  include/differenceOfButterworths.hpp
  include/differenceOfIIR.hpp
  include/fftshift.hpp
- include/filters.hpp
+ include/getAngleMask.hpp
+ include/getAngleMaskSmooth.hpp
+ include/getFilterIDX.hpp
+ include/getFilters.hpp
+ include/getFiltersSmoothWindow.hpp
+ include/getIDXFromFilter.hpp
+ include/getPolarGrid.hpp
+ include/getRadialMaskPair.hpp
  include/maxSCFpyrHt.hpp
  include/phase_evm.h
  include/reconLevel.hpp
+ include/type2str.hpp
