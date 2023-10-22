@@ -19,7 +19,7 @@ struct Filter {
 
 // Function to generate filters for a complex steerable pyramid
 //std::vector<Filter> getFilters(const cv::Size& dimension, const std::vector<double>& rVals, int orientations, double twidth = 1.0) {
-void getFilters(std::vector<Filter>& filters,const cv::Size& dimension, const std::vector<double>& rVals, int orientations, double twidth = 1.0) {
+void getFilters(std::vector<cv::Mat>& filters,const cv::Size& dimension, const std::vector<double>& rVals, int orientations, double twidth = 1.0) {
     //std::vector<Filter> filters;
     cv::Mat angle, log_rad;
     //cv::split(getPolarGrid(dimension), angle, log_rad);
@@ -40,33 +40,34 @@ void getFilters(std::vector<Filter>& filters,const cv::Size& dimension, const st
     
     double maxRVal = rVals.size();
     cv::Mat lomask;
-    cv::Mat himask1;
+    //cv::Mat himask1;
     cv::Mat radMask;
     cv::Mat anglemask;
-    cv::Mat t;
+    //cv::Mat t;
     
     std::cout << "getFilters maxRVal = " << maxRVal << std::endl;
     for(size_t k = 1; k < maxRVal; ++k){
-    	std::cout << "getFilters k = " << k << std::endl;
-
-    	getRadialMaskPair(rVals[k], log_rad, twidth, himask1, lomask);
     	
-    	cv::multiply(himask1, lomaskPrev, radMask);
+    	//getRadialMaskPair(rVals[k], log_rad, twidth, himask1, lomask);
+    	//cv::multiply(himask1, lomaskPrev, radMask);
+    	getRadialMaskPair(rVals[k], log_rad, twidth, himask, lomask);
+    	cv::multiply(himask, lomaskPrev, radMask);
+    	
+    	
     	  
     	for(int j = 0; j < orientations; ++j){
-    	
+    		
     		getAngleMask(j, orientations, angle,anglemask);
     	
     		anglemask = anglemask / 2.0;
     		
-    		cv::multiply(radMask,anglemask,t);
-    		filters.push_back({t});//himask1.copyTo(filters[counter].mask);
-    		std::cout << "after filters.push_back({t});" << std::endl;
+    		filters.push_back({radMask.mul(anglemask)});
+    		
+    		//cv::multiply(radMask,anglemask,t);
+    		//filters.push_back({t});//himask1.copyTo(filters[counter].mask);
+    		
     	}
     	lomask.copyTo(lomaskPrev);
     }
      filters.push_back({lomask});//lomask.copyTo(filters[counter].mask);
-     std::cout << "after filters.push_back({lomask});" << std::endl;
-    std::cout << "filters.size()" << filters.size() << std::endl;
-   // return filters;
 }

@@ -12,12 +12,16 @@ void getRadialMaskPair(float r, const cv::Mat& rad, float twidth, cv::Mat& himas
     cv::log(r,rTemp);
     
     cv::subtract(radTemp,rTemp,log_rad); 
+
+    
     
    
     // Calculate HIMASK
     cv::Mat tmp_himask;
     log_rad.copyTo(tmp_himask);
     cv::threshold(tmp_himask, tmp_himask, -twidth, 0, cv::THRESH_TRUNC);
+    
+   
     
 	
     tmp_himask *= CV_PI / (2 * twidth);
@@ -32,11 +36,13 @@ void getRadialMaskPair(float r, const cv::Mat& rad, float twidth, cv::Mat& himas
     );
 
     tmp_himask.copyTo(himask);
+    
      
     // Calculate LOMASK
     cv::Mat mulTemp;
     //cv::multiply(himask,himask,mulTemp);
     cv::multiply(tmp_himask,tmp_himask,mulTemp);
     cv::Mat  temp = 1 - mulTemp;
-    cv::sqrt(temp, lomask);
+    cv::sqrt(temp, lomask);  
+    
 }

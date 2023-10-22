@@ -16,11 +16,12 @@
 #include <cstdint> // for uint8_t
 
 
-
+/*
 // Define a structure to store the filter and its properties
 struct Filter {
     cv::Mat mask;
 };
+*/
 
 // Define a structure for the filter indices in both dimensions
 struct FilterIndices {
@@ -124,7 +125,7 @@ private:
 	cv::Mat im_dft;
 	cv::Mat img_input_;
 	
-	std::vector<Filter> filters;
+	std::vector<cv::Mat> filters;//std::vector<Filter> filters;
 	
 	//cv::Mat croppedFilters;
 	std::vector<cv::Mat> croppedFilters;

@@ -161,14 +161,7 @@ void PhaseEVM::run()
         {
             	std::cerr<< "Invalid Filter Types = " << pyrType << std::endl;
         }
-        
-       std::cout << "filters[0].mask.size() = " << filters[0].mask.size() <<std::endl;
-       std::cout << "filters[0].mask.rows = " << filters[0].mask.rows <<std::endl;
-
-       std::cout << "filters[0].mask.rows * filters[0].mask.cols = " << filters[0].mask.rows * filters[0].mask.cols <<std::endl;
-       std::cout << " filters.size()= " << filters.size() <<std::endl;
-        
-        
+               
        getFilterIDX(filters,filtIDX,croppedFilters);
        //croppedFilters = getFilterIDX(filters,filtIDX);
        
@@ -521,7 +514,7 @@ void PhaseEVM::run()
 	
 	std::cout <<"befoar // Add unmolested lowpass residual"  << std::endl;
 	// Add unmolested lowpass residual
-	level = filters[0].mask.rows;
+	level = filters.size();
 	for(int frameIDX = 0; frameIDX < input_cap_->get(cv::CAP_PROP_FRAME_COUNT); frameIDX++)
 	{	
 		//extractedRegionVid = vidFFT[frameIDX](cv::Rect(filtIDX[level * 2], filtIDX[level * 2 + 1], vidFFT[frameIDX].cols, vidFFT[frameIDX].rows));

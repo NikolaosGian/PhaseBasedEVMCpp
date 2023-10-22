@@ -23,8 +23,8 @@ find_package(Boost REQUIRED program_options)
 find_package(OpenMP)
 
 # Using CXX Flags: Optimization (-O3) and OpenMP 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -fopenmp -std=c++14")
-
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -fopenmp -std=c++14")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -std=c++14")
 
 # Includes
 include_directories("include")

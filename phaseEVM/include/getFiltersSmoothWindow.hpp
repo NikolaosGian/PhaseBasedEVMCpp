@@ -20,9 +20,10 @@ int factorial(int n)
 */
 
 
+
 const double pi = M_PI;
 
-std::vector<Filter> getFiltersSmoothWindow(std::vector<Filter>& filters,const cv::Size& dims, int orientations, int cosOrder, int filtersPerOctave, bool complexFilt = true, int height = 0) {
+void getFiltersSmoothWindow(std::vector<cv::Mat>& filters,const cv::Size& dims, int orientations, int cosOrder, int filtersPerOctave, bool complexFilt = true, int height = 0) {
     //std::vector<Filter> filters;
     cv::Mat angle, rad;
 
@@ -142,6 +143,4 @@ std::vector<Filter> getFiltersSmoothWindow(std::vector<Filter>& filters,const cv
     	}
 
     	filters.push_back({ lopass}); // -1 indicates low-pass filter
-
-    	return filters;
 }

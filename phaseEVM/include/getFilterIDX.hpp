@@ -23,7 +23,7 @@ std::ostream& operator<<(std::ostream& os, const FilterIndices& indices) {
     return os;
 }
 
-void getFilterIDX(const std::vector<Filter>& filters, std::vector<FilterIndices>& filtIDX , std::vector<cv::Mat>& croppedFilters) {
+void getFilterIDX(const std::vector<cv::Mat>& filters, std::vector<FilterIndices>& filtIDX , std::vector<cv::Mat>& croppedFilters) {
 
     int nFilts = filters.size();
     filtIDX.resize(nFilts);
@@ -32,7 +32,7 @@ void getFilterIDX(const std::vector<Filter>& filters, std::vector<FilterIndices>
     
 
     for (int k = 0; k < nFilts; ++k) {
-        FilterIndices indices = getIDXFromFilter(filters[k].mask);
+        FilterIndices indices = getIDXFromFilter(filters[k]);
         //std::cout << "indices.dim1[0] = " << indices.dim1[0] << std::endl;
         //std::cout << "indices.dim2[0] = " << indices.dim2[0] << std::endl;
         //std::cout << "indices.dim1[1] = " << indices.dim1[1] << std::endl;
@@ -48,7 +48,7 @@ void getFilterIDX(const std::vector<Filter>& filters, std::vector<FilterIndices>
         //filtIDX[k].dim2[1]= indices.dim2[1];
         //filtIDX[k].dim2= indices.dim2;
        // std::cout << k<< " filtIDX[k] = " << filtIDX[k] << std::endl;
-        croppedFilters[k] = filters[k].mask(cv::Rect(indices.dim2[0], indices.dim1[0], indices.dim2[1] - indices.dim2[0] + 1, indices.dim1[1] - indices.dim1[0] + 1));
+        croppedFilters[k] = filters[k](cv::Rect(indices.dim2[0], indices.dim1[0], indices.dim2[1] - indices.dim2[0] + 1, indices.dim1[1] - indices.dim1[0] + 1));
         
         
     }
