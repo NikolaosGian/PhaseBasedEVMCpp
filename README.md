@@ -11,7 +11,7 @@ This implementation is based on the works done at MIT CSAIL.
 For futher details visit https://people.csail.mit.edu/nwadhwa/phase-video/
 
 
-Library Used: OpenCV, Boost
+Library Used: FFMPEG
 ## Compiling and Running the code:
 Required packages: C++, CMake, FFMPEG
 ### Compiling
