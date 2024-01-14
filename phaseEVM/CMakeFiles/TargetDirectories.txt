@@ -1,3 +1,0 @@
-/home/vm2/Desktop/phaseEVM/CMakeFiles/rebuild_cache.dir
-/home/vm2/Desktop/phaseEVM/CMakeFiles/edit_cache.dir
-/home/vm2/Desktop/phaseEVM/CMakeFiles/phaseEVM.dir
