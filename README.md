@@ -10,8 +10,9 @@ This repository containing the Phase Method Eulerian Motion Magnification (EVM) 
 This implementation is based on the works done at MIT CSAIL.
 For futher details visit https://people.csail.mit.edu/nwadhwa/phase-video/
 
+## ATTENTIOΝ:
+Not 100% accurate implementation works only with
 
-Library Used: FFMPEG
 ## Compiling and Running the code:
 Required packages: C++, CMake, FFMPEG
 ### Compiling
