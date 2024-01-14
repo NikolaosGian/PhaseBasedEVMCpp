@@ -25,7 +25,7 @@ Required packages: C++, CMake, FFMPEG, FFTW3
 	$ cd <PROJ_DIR>
 	$ cmake .
 	$ make
-### Running the program with test params
+### Running the program
 	$ cd <PROJ_DIR>
 	$ ./bin/phase_Eulerian
  
