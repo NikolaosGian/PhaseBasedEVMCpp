@@ -3,8 +3,7 @@
 <p align="left">
   <a href="https://github.com/NikolaosGian/PhaseBasedEVMCpp/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-brightgreen.svg" alt="License"></a>
 </p>
-
- NOT WORKING 
+ 
 ## About:
 This repository containing the Phase Method Eulerian Motion Magnification (EVM) implementation with C++
 
@@ -14,14 +13,14 @@ For futher details visit https://people.csail.mit.edu/nwadhwa/phase-video/
 
 Library Used: OpenCV, Boost
 ## Compiling and Running the code:
-Required packages: g++, CMake, OpenCV, Boost
+Required packages: C++, CMake, FFMPEG
 ### Compiling
 	$ cd <PROJ_DIR>
 	$ cmake .
 	$ make
 ### Running the program with test params
 	$ cd <PROJ_DIR>
-	$ ./bin/phaseEVM test/test_baby.param
+	$ ./bin/phase_Eulerian
  
 
  ## Adaptations:
