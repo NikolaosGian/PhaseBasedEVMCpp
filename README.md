@@ -15,9 +15,9 @@ For futher details visit https://people.csail.mit.edu/nwadhwa/phase-video/
 
 | Fillters  | pyrType | attenuateOtherFreq |
 | ------------- | ------------- | ---------|
-| FIRWindowBP   | octave        | :heavy_check_mark:	|
-| differenceOfIIR  | halfOctave |	:heavy_check_mark:|
-| differenceOfButterworths | 	 |	:heavy_check_mark: |
+| FIRWindowBP   | octave / halfOctave       | :heavy_check_mark:	|
+| differenceOfIIR  | octave / halfOctave  |	:heavy_check_mark:|
+| differenceOfButterworths | octave / halfOctave 	 |	:heavy_check_mark: |
 
 ## Compiling and Running the code:
 Required packages: C++, CMake, FFMPEG, FFTW3
