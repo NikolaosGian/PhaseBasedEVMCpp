@@ -11,12 +11,16 @@ This implementation is based on the works done at MIT CSAIL.
 For futher details visit https://people.csail.mit.edu/nwadhwa/phase-video/
 
 Ιmplementation works only with:
-Attempt | #1 | #2 | #3 | #4 | #5 | #6 | #7 | #8 | #9 | #10 | #11
---- | --- | --- | --- |--- |--- |--- |--- |--- |--- |--- |---
-Seconds | 301 | 283 | 290 | 286 | 289 | 285 | 287 | 287 | 272 | 276 | 269
+
+
+| Fillters  | pyrType | attenuateOtherFreq |
+| ------------- | ------------- | ---------|
+| FIRWindowBP   | octave        | :heavy_check_mark:	|
+| differenceOfIIR  | halfOctave |	|
+| differenceOfButterworths |	 |	|
 
 ## Compiling and Running the code:
-Required packages: C++, CMake, FFMPEG
+Required packages: C++, CMake, FFMPEG, FFTW3
 ### Compiling
 	$ cd <PROJ_DIR>
 	$ cmake .
