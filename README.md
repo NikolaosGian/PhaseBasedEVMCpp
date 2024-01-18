@@ -20,6 +20,9 @@ For futher details visit https://people.csail.mit.edu/nwadhwa/phase-video/
 
 ## Compiling and Running the code:
 Required packages: C++, CMake, FFMPEG, FFTW3
+### Set correct I/O filename
+In main.cpp input_filename & output_filename need to be set right for your path.
+
 ### Compiling
 	$ cd <PROJ_DIR>
 	$ cmake .
