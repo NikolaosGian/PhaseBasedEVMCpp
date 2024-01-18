@@ -27,7 +27,10 @@ Required packages: C++, CMake, FFMPEG, FFTW3
 ### Running the program
 	$ cd <PROJ_DIR>
 	$ ./bin/phase_Eulerian
- 
+ ### Outputs
+In ./data/ having the start video (before magnification) and the final output video extended with _phase.avi.
+**Do not use large size video.**
+
 
  ## Adaptations:
 This project has been adapted as reference to build Phase EVM by:
