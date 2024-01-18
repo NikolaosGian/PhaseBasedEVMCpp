@@ -15,7 +15,6 @@ For futher details visit https://people.csail.mit.edu/nwadhwa/phase-video/
 
 | Fillters  | pyrType | attenuateOtherFreq |
 | ------------- | ------------- | ---------|
-| FIRWindowBP   | octave / halfOctave       | :heavy_check_mark:	|
 | differenceOfIIR  | octave / halfOctave  |	:heavy_check_mark:|
 | differenceOfButterworths | octave / halfOctave 	 |	:heavy_check_mark: |
 
